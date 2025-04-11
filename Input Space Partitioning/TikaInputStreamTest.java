@@ -36,6 +36,13 @@ import java.nio.file.Paths;
 import java.sql.Blob;
 import java.sql.SQLException;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import org.apache.commons.io.input.TaggedInputStream;
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 
@@ -46,7 +53,7 @@ import org.apache.tika.utils.StringUtils;
     
     
 
-public class peekTest{
+public class TikaInputStreamTest{
        /**
      * Fills the given buffer with upcoming bytes from this stream without
      * advancing the current stream position. The buffer is filled up unless
@@ -100,4 +107,41 @@ public class peekTest{
         assertEquals(3, result);
     }
 
+
+    private long position = 0;
+    private int consecutiveEOFs = 0;
+    private static final int MAX_CONSECUTIVE_EOFS = 1000;
+
+    protected void afterRead(int n) throws IOException {
+        if (n != -1) {
+            position += n;
+        } else {
+            consecutiveEOFs++;
+            if (consecutiveEOFs > MAX_CONSECUTIVE_EOFS) {
+                throw new IOException("Read too many -1 (EOFs); there could be an infinite loop." +
+                        "If you think your file is not corrupt, please open an issue on Tika's " +
+                        "JIRA");
+            }
+        }
+    }
+
+    @Test
+    public void testafterReadlessthan0() throws IOException {
+        afterRead(-1);
+        assertEquals(1, consecutiveEOFs);
+    }
+
+
+    @Test
+    public void testafterRead0() throws IOException {
+        afterRead(0);
+        assertEquals(0, position);
+    }
+
+
+    @Test
+    public void testafterReadgreaterthan0() throws IOException {
+        afterRead(1);
+        assertEquals(1, position);
+    }
 }

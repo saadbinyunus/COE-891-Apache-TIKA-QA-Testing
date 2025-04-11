@@ -41,7 +41,7 @@ import org.junit.jupiter.api.Test;
 import org.apache.tika.TikaTest;
 import org.apache.tika.utils.DateUtils;
 
-public class EqualsTest{
+public class MetadataTest{
 
     public boolean equals(Object o) {
 
@@ -83,4 +83,37 @@ public class EqualsTest{
         boolean result = equals(o1);
         assertFalse(result);
     }
+
+
+
+    private String[] appendValues(String[] values, final String value) {
+        if (value == null) {
+            return values;
+        }
+        String[] newValues = new String[values.length + 1];
+        System.arraycopy(values, 0, newValues, 0, values.length);
+        newValues[newValues.length - 1] = value;
+        return newValues;
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testappendValuesNUll(){
+        String[] result = appendValues(null,"aaa");
+    }
+
+    @Test
+    public void testappendValuesEmpty(){
+        String[] temp1 = {};
+        String[] result = appendValues(temp1,"aaa");
+        assertEquals("aaa", result[0]);
+    }
+
+    @Test
+    public void testappendValuesNotEmpty(){
+        String[] temp2 = {"bbb"};
+        String[] result = appendValues(temp2,"aaa");
+        assertEquals("bbb", result[0]);
+        assertEquals("aaa", result[1]);
+    }
+
 }
